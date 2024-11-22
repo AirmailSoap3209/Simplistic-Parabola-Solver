@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parabola Solver with Codio</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <br>
+    <div class="header-container">
+      <h1>Parabola Solver <span class="version">v0.19</span></h1>
+      <div class="description">
+        <p class="main-desc">An intuitive tool for quadratic equations and parabolas</p>
+        <p class="sub-desc">Plot, analyze, and solve using multiple methods: points, vertex, or focus-directrix</p>
+      </div>
+    </div>
+    <div>
+      <h2 class="tab active" id="enterValuesTab" onclick="switchTab('values')" style="--active-tab-color: #3498db;">Enter Values</h2>
+      <h2 class="tab" id="enterEquationTab" onclick="switchTab('equation')">Enter Equation</h2>
+      <h2 class="tab" id="settingsTab" onclick="switchTab('settings')" style="--active-tab-color: #2ecc71;">Settings</h2>
+    </div>
+    <div id="valuesSection">
+      <div id="container"style="display:inline-block">
+        <span id="left-arrow" class="arrow">&#8249;</span>
+
+        <div id="slider">
+          <div id="method1" class="method">
+            <h2>3 Points Method <span class="tooltip-icon" data-tooltip="Enter any three points that lie on your parabola.">ⓘ</span></h2>
+            <p class="description">Enter three points to find the equation.</p>
+            <form id="3ptForm" class="input-form">
+              <div class="input-group">
+                <label for="x1">Point 1 (x1, y1):</label>
+                <div class="coordinate-inputs">
+                  <input type="number" step="any" id="x1" placeholder="x1" autocomplete="off" required>
+                  <input type="number" step="any" id="y1" placeholder="y1" autocomplete="off" required>
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="x2">Point 2 (x2, y2):</label>
+                <div class="coordinate-inputs">
+                  <input type="number" step="any" id="x2" placeholder="x2" autocomplete="off" required>
+                  <input type="number" step="any" id="y2" placeholder="y2" autocomplete="off" required>
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="x3">Point 3 (x3, y3):</label>
+                <div class="coordinate-inputs">
+                  <input type="number" step="any" id="x3" placeholder="x3" autocomplete="off" required>
+                  <input type="number" step="any" id="y3" placeholder="y3" autocomplete="off" required>
+                </div>
+              </div>
+              <div class="error-message" id="3ptError"></div>
+              <button type="submit">Calculate Equation</button>
+            </form>
+          </div>
+
+          <div id="method2" class="method">
+            <h2>Vertex and Point Method <span class="tooltip-icon" data-tooltip="Enter the vertex (highest or lowest point) of your parabola and any other point that lies on it.">ⓘ</span></h2>
+            <p class="description">Enter the vertex and one other point to find the equation.</p>
+            <form id="2ptForm" class="input-form">
+              <div class="input-group">
+                <label for="vertX">Vertex (x, y):</label>
+                <div class="coordinate-inputs">
+                  <input type="number" step="any" id="vertX" placeholder="Vertex X" autocomplete="off" required>
+                  <input type="number" step="any" id="vertY" placeholder="Vertex Y" autocomplete="off" required>
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="vertX1">Point (x, y):</label>
+                <div class="coordinate-inputs">
+                  <input type="number" step="any" id="vertX1" placeholder="x1" autocomplete="off" required>
+                  <input type="number" step="any" id="vertY1" placeholder="y1" autocomplete="off" required>
+                </div>
+              </div>
+              <div class="error-message" id="2ptError"></div>
+              <button type="submit">Calculate Equation</button>
+            </form>
+          </div>
+
+          <div id="method3" class="method">
+            <h2>Focus and Directrix Method <span class="tooltip-icon" data-tooltip="Enter the focus point and the y-value of the directrix line. The focus is equidistant from all points on the parabola to the directrix.">ⓘ</span></h2>
+            <p class="description">Enter the focus and directrix to find the equation.</p>
+            <form id="focusForm" class="input-form">
+              <div class="input-group">
+                <label for="xFocus">Focus (x, y): <span class="tooltip-icon small" data-tooltip="The focus is a special point that helps define the parabola. Every point on the parabola is equidistant from the focus and the directrix line.">ⓘ</span></label>
+                <div class="coordinate-inputs">
+                  <input type="number" step="any" id="xFocus" placeholder="Focus X" autocomplete="off" required>
+                  <input type="number" step="any" id="yFocus" placeholder="Focus Y" autocomplete="off" required>
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="yDirectrix">Directrix (y = Constant): <span class="tooltip-icon small" data-tooltip="The directrix is a horizontal line. The parabola is formed by points that are equally distant from both this line and the focus point. The further the directrix is from the focus, the wider the parabola.">ⓘ</span></label>
+                <input type="number" step="any" id="yDirectrix" placeholder="Directrix" autocomplete="off" required>
+              </div>
+              <div class="error-message" id="focusError"></div>
+              <button type="submit">Calculate Equation</button>
+            </form>
+          </div>
+        </div>
+
+        <span id="right-arrow" class="arrow">&#8250;</span>
+      </div>
+    </div>
+
+    <div id="results">
+      <h2>Resulting Equation:</h2>
+      <p id="equation"></p>
+      <canvas id="parabolaCanvas" width="600" height="600"></canvas>
+      <button type="button" onclick="exportGraph('parabolaCanvas')" class="export-btn">Export Graph as .png</button>
+    </div>
+
+    <div id="equationSection" class="hidden">
+      <div id="equContainer" style="display:inline-block">
+        <span id="left-equArrow" class="equArrow">&#8249;</span>
+        <div id="equSlider">
+          <div id="1stForm" class="equInput">
+            <h2>Standard Form</h2>
+            <p class="description">Enter the required values to complete the equation</p>
+            <form id="stdForm">
+              <label for="stdInputA">Equation (y = ax² +bx +c):</label>
+              <input type="float" id="stdInputA" placeholder="a" autocomplete="off" required>
+              <input type="float" id="stdInputB" placeholder="b" autocomplete="off" required>
+              <input type="float" id="stdInputC" placeholder="c" autocomplete="off" required>
+              <button type="submit">Plot Graph</button>
+            </form>
+          </div>
+
+          <div id="2ndForm" class="equInput">
+            <h2>Vertex Form</h2>
+            <p class="description">Enter the required values to complete the equation</p>
+            <form id="vertForm">
+              <label for="vertInputA">Equation (y = a(x - h)^2 + k):</label>
+              <input type="float" id="vertInputA" placeholder="a" autocomplete="off" required>
+              <input type="float" id="vertInputH" placeholder="h" autocomplete="off" required>
+              <input type="float" id="vertInputK" placeholder="k" autocomplete="off" required>
+              <button type="submit">Plot Graph</button>
+            </form>
+          </div>
+        </div>
+        <span id="right-equArrow" class="equArrow">&#8250;</span>
+      </div>
+    </div>
+
+    <div id="equResults" class="hidden">
+      <h2>Resulting Graph:</h2>
+      <canvas id="equParabolaCanvas" width="600" height="600"></canvas>
+      <button type="button" onclick="exportGraph('equParabolaCanvas')" class="export-btn">Export Graph as .png</button>
+    </div>
+
+    <div id="settingsSection" class="hidden">
+      <div class="settings-container">
+        <h2>Settings</h2>
+        <form id="settingsForm">
+          <div class="settings-group">
+            <h3>Appearance</h3>
+            <div class="settings-row">
+              <label for="themeSelect">Theme Mode:</label>
+              <select id="themeSelect" onchange="handleThemeChange()">
+                <option value="light">Light Mode</option>
+                <option value="dark">Dark Mode</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <h3>Input Format</h3>
+            <div class="settings-row">
+              <label for="equationFormat">Equation Format: <span class="tooltip-icon" data-tooltip="Choose how you want your parabola equation to be displayed">ⓘ</span></label>
+              <select id="equationFormat" onchange="handleFormatChange()">
+                <option value="standard">Standard Form (ax² + bx + c)</option>
+                <option value="vertex">Vertex Form (a(x-h)² + k)</option>
+              </select>
+            </div>
+            <div class="settings-row">
+              <label for="decimalPlaces">Decimal Places: <span id="decimalValue">4</span></label>
+              <div class="slider-container">
+                <input type="range" id="decimalPlaces" min="0" max="10" value="4" step="1" oninput="updateDecimalPlaces(this.value)">
+                <div class="slider-labels">
+                  <span>0</span>
+                  <span>5</span>
+                  <span>10</span>
+                </div>
+              </div>
+              <span class="tooltip-icon small" data-tooltip="Adjust the number of decimal places shown in equations (0-10)">ⓘ</span>
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <h3>Graph Display</h3>
+            <div class="settings-row">
+              <label for="canvasWidth">Canvas Width (Max: 1200, Min 300):</label>
+              <input type="number" id="canvasWidth" placeholder="Width" value="600" min="300" max="1200" autocomplete="off" required>
+            </div>
+            <div class="settings-row">
+              <label for="canvasHeight">Canvas Height (Max: 1200, Min 300):</label>
+              <input type="number" id="canvasHeight" placeholder="Height" value="600" min="300" max="1200" autocomplete="off" required>
+            </div>
+          </div>
+
+          <div class="settings-actions">
+            <button type="button" onclick="applySettings()">Apply Settings</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="slider.js"></script>
+    <script src="plotter.js"></script>
+    <script src="sketch.js"></script>
+    <script src="tabSwitcher.js"></script>
+    <script src="nightowl.js"></script>
+    <script src="settings.js"></script>
+    <script src="tests.js"></script>
+  </body>
+  <footer>
+    <p xmlns:cc="http://creativecommons.org/ns#" xmlns:dct="http://purl.org/dc/terms/">
+      <a property="dct:title" rel="cc:attributionURL">Parabola Solver </a>
+      by
+      <span property="cc:attributionName">Kevin J</span>
+      is licensed under
+      <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">
+        CC BY-NC-SA 4.0
+        <img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1" alt="">
+        <img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" alt="">
+        <img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1" alt="">
+        <img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1" alt="">
+      </a>
+    </p>
+  </footer>
+</html>
