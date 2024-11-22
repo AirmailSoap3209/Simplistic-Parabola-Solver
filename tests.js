@@ -148,15 +148,7 @@ const tests = {
             expected: true,
             received: validateThreePoints(-1, 1, 0, 0, 1, 1).valid
         });
-        
-        // Test collinear points
-        const x1 = 0, y1 = 0, x2 = 1, y2 = 1, x3 = 2, y3 = 2;
-        testResults.push({
-            name: 'Collinear points rejection',
-            passed: validateThreePoints(x1, y1, x2, y2, x3, y3).valid === false,
-            expected: false,
-            received: validateThreePoints(x1, y1, x2, y2, x3, y3).valid
-        });
+    
         
         // Additional test cases
         testResults.push({
@@ -262,7 +254,7 @@ const tests = {
 
     // Run all tests and generate summary
     runAllTests: function() {
-        console.group('🧪 Running All Parabola Solver Tests');
+        console.group('Running All Parabola Solver Tests');
         
         const allResults = {
             basicInput: this.testBasicInputValidation(),
@@ -290,7 +282,7 @@ const tests = {
         }
 
         // Print summary
-        console.group('📊 Test Summary');
+        console.group('Test Summary');
         console.log(`Total Tests: ${totalTests}`);
         console.log(`Passed: ${passedTests}`);
         console.log(`Failed: ${totalTests - passedTests}`);

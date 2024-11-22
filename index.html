@@ -9,7 +9,7 @@
   <body>
     <br>
     <div class="header-container">
-      <h1>Parabola Solver <span class="version">v0.19</span></h1>
+      <h1>Parabola Solver <span class="version">v0.20</span></h1>
       <div class="description">
         <p class="main-desc">An intuitive tool for quadratic equations and parabolas</p>
         <p class="sub-desc">Plot, analyze, and solve using multiple methods: points, vertex, or focus-directrix</p>
@@ -198,6 +198,15 @@
             </div>
           </div>
 
+          <div class="settings-group">
+            <label class="toggle-switch">
+              <input type="checkbox" id="interactiveModeToggle" onchange="toggleInteractiveMode(this.checked)">
+              <span class="slider round"></span>
+            </label>
+            <span class="setting-label">Interactive Mode</span>
+            <span class="tooltip-icon" data-tooltip="Enable to drag points directly on the graph">ⓘ</span>
+          </div>
+
           <div class="settings-actions">
             <button type="button" onclick="applySettings()">Apply Settings</button>
           </div>
@@ -211,6 +220,7 @@
     <script src="tabSwitcher.js"></script>
     <script src="nightowl.js"></script>
     <script src="settings.js"></script>
+    <script src="interactive.js"></script>
     <script src="tests.js"></script>
   </body>
   <footer>

@@ -9,6 +9,11 @@ const maxZoomIn = 5;
 const maxZoomOut = 0.125;
 const zoomStep = 0.1;
 
+// Add new variables for point dragging
+let isInteractiveMode = false;
+let selectedPoint = null;
+let pointRadius = 5;
+
 function plotThing(a, b, c, canvasId = 'parabolaCanvas') {
   globA = a;
   globB = b;
@@ -147,49 +152,146 @@ function drawPoints(ctx, points) {
   });
 }
 
+function enableInteractiveMode() {
+    isInteractiveMode = true;
+    const canvas = document.getElementById('parabolaCanvas');
+    canvas.style.cursor = 'pointer';
+}
+
+function disableInteractiveMode() {
+    isInteractiveMode = false;
+    selectedPoint = null;
+    const canvas = document.getElementById('parabolaCanvas');
+    canvas.style.cursor = 'default';
+}
+
+function isPointNearMouse(point, mouseX, mouseY, canvasId = 'parabolaCanvas') {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return false;
+    
+    const canvasX = point.x * 20 * zoomLevel;
+    const canvasY = -point.y * 20 * zoomLevel;
+    const distance = Math.sqrt(
+        Math.pow(mouseX - (canvas.width/2 + offsetX + canvasX), 2) +
+        Math.pow(mouseY - (canvas.height/2 + offsetY + canvasY), 2)
+    );
+    return distance < pointRadius * 2;
+}
+
+function displayMessage(message, isError = false) {
+    const equationElement = document.getElementById('equation');
+    if (equationElement) {
+        equationElement.textContent = message;
+        equationElement.style.color = isError ? '#ff4444' : '#2ecc71';
+        // Reset color after 3 seconds if it's an error
+        if (isError) {
+            setTimeout(() => {
+                equationElement.style.color = '';
+            }, 3000);
+        }
+    }
+}
+
 function setupCanvas(canvasId) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
 
-  canvas.addEventListener('mousedown', (e) => {
+  canvas.addEventListener('mousedown', function(e) {
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    if (isInteractiveMode) {
+      // Check if we clicked near any point
+      const activeMethod = document.querySelector('.method:not([style*="display: none"])');
+      const methodId = activeMethod.id;
+      let points = [];
+
+      switch (methodId) {
+        case 'method1':
+          points = [
+            { x: parseFloat(document.getElementById('x1').value), y: parseFloat(document.getElementById('y1').value), inputs: ['x1', 'y1'] },
+            { x: parseFloat(document.getElementById('x2').value), y: parseFloat(document.getElementById('y2').value), inputs: ['x2', 'y2'] },
+            { x: parseFloat(document.getElementById('x3').value), y: parseFloat(document.getElementById('y3').value), inputs: ['x3', 'y3'] }
+          ];
+          break;
+        case 'method2':
+          points = [
+            { x: parseFloat(document.getElementById('vertX').value), y: parseFloat(document.getElementById('vertY').value), inputs: ['vertX', 'vertY'] },
+            { x: parseFloat(document.getElementById('vertX1').value), y: parseFloat(document.getElementById('vertY1').value), inputs: ['vertX1', 'vertY1'] }
+          ];
+          break;
+      }
+
+      for (let point of points) {
+        if (isPointNearMouse(point, mouseX, mouseY, canvasId)) {
+          selectedPoint = point;
+          canvas.style.cursor = 'grabbing';
+          return;
+        }
+      }
+    }
+    
+    // If we're not in interactive mode or didn't click a point, enable canvas dragging
     isDragging = true;
-    startX = e.offsetX - offsetX;
-    startY = e.offsetY - offsetY;
+    startX = e.clientX - offsetX;
+    startY = e.clientY - offsetY;
   });
 
-  canvas.addEventListener('mousemove', (e) => {
-    if (isDragging) {
-      offsetX = e.offsetX - startX;
-      offsetY = e.offsetY - startY;
+  canvas.addEventListener('mousemove', function(e) {
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    if (isInteractiveMode && selectedPoint) {
+      // Convert mouse coordinates to graph coordinates
+      const graphX = ((mouseX - canvas.width/2 - offsetX) / (20 * zoomLevel)).toFixed(2);
+      const graphY = (-(mouseY - canvas.height/2 - offsetY) / (20 * zoomLevel)).toFixed(2);
+
+      // Update input fields
+      document.getElementById(selectedPoint.inputs[0]).value = graphX;
+      document.getElementById(selectedPoint.inputs[1]).value = graphY;
+
+      // Recalculate and update the parabola
+      const form = document.querySelector('.method:not([style*="display: none"]) form');
+      const submitEvent = new Event('submit');
+      form.dispatchEvent(submitEvent);
+    } else if (isDragging) {
+      // Normal canvas dragging
+      offsetX = e.clientX - startX;
+      offsetY = e.clientY - startY;
       plotThing(globA, globB, globC, canvasId);
     }
   });
 
-  canvas.addEventListener('mouseup', () => {
+  canvas.addEventListener('mouseup', function() {
+    if (isInteractiveMode && selectedPoint) {
+      selectedPoint = null;
+      canvas.style.cursor = 'pointer';
+    }
     isDragging = false;
   });
 
-  canvas.addEventListener('mouseleave', () => {
+  canvas.addEventListener('mouseleave', function() {
     isDragging = false;
+    if (selectedPoint) {
+      selectedPoint = null;
+      canvas.style.cursor = 'pointer';
+    }
   });
 
   canvas.addEventListener('wheel', (event) => {
     event.preventDefault();
     
-    const mouseX = event.offsetX - canvas.width / 2 - offsetX;
-    const mouseY = event.offsetY - canvas.height / 2 - offsetY;
+    const zoomIn = event.deltaY < 0;
+    const newZoom = zoomIn ? zoomLevel * (1 + zoomStep) : zoomLevel * (1 - zoomStep);
     
-    const oldZoom = zoomLevel;
-    
-    if (event.deltaY < 0 && zoomLevel < maxZoomIn) {
-      zoomLevel = Math.min(maxZoomIn, zoomLevel * 1.1);
-    } else if (event.deltaY > 0 && zoomLevel > maxZoomOut) {
-      zoomLevel = Math.max(maxZoomOut, zoomLevel / 1.1);
+    if (newZoom >= maxZoomOut && newZoom <= maxZoomIn) {
+        zoomLevel = newZoom;
+        displayMessage(`Zoom level: ${Math.round(zoomLevel * 100)}%`);
+    } else {
+        displayMessage('Maximum zoom limit reached', true);
     }
-    
-    const zoomRatio = zoomLevel / oldZoom;
-    offsetX += mouseX * (1 - zoomRatio);
-    offsetY += mouseY * (1 - zoomRatio);
     
     plotThing(globA, globB, globC, canvasId);
   });

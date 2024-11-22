@@ -173,13 +173,13 @@ document.getElementById('3ptForm').addEventListener('submit', function(event) {
   const y3 = parseFloat(document.getElementById('y3').value);
 
   if (!validateInputs([x1, y1, x2, y2, x3, y3])) {
-    errorElement.textContent = "All values must be numbers between -300 and 300.";
+    displayMessage("All values must be numbers between -300 and 300.", true);
     return;
   }
 
   const validation = validateThreePoints(x1, y1, x2, y2, x3, y3);
   if (!validation.valid) {
-    errorElement.textContent = validation.error;
+    displayMessage(validation.error, true);
     return;
   }
 
@@ -191,7 +191,7 @@ document.getElementById('3ptForm').addEventListener('submit', function(event) {
   let det =  a1 * (b2 * c3 - b3 * c2) - b1 * (a2 * c3 - a3 * c2) + c1 * (a2 * b3 - a3 * b2);
 
   if (det === 0) {
-    alert("Invalid Input: Please ensure all points are unique and try again.");
+    displayMessage("Invalid Input: Please ensure all points are unique and try again.", true);
     return;
   }
 
@@ -215,13 +215,13 @@ document.getElementById('2ptForm').addEventListener('submit', function(event) {
   const py = parseFloat(document.getElementById('vertY1').value);
 
   if (!validateInputs([vx, vy, px, py])) {
-    errorElement.textContent = "All values must be numbers between -300 and 300.";
+    displayMessage("All values must be numbers between -300 and 300.", true);
     return;
   }
 
   const validation = validateVertexAndPoint(vx, vy, px, py);
   if (!validation.valid) {
-    errorElement.textContent = validation.error;
+    displayMessage(validation.error, true);
     return;
   }
 
@@ -241,13 +241,13 @@ document.getElementById('focusForm').addEventListener('submit', function(event) 
   const directrix = parseFloat(document.getElementById('yDirectrix').value);
 
   if (!validateInputs([fx, fy, directrix])) {
-    errorElement.textContent = "All values must be numbers between -300 and 300.";
+    displayMessage("All values must be numbers between -300 and 300.", true);
     return;
   }
 
   const validation = validateFocusAndDirectrix(fx, fy, directrix);
   if (!validation.valid) {
-    errorElement.textContent = validation.error;
+    displayMessage(validation.error, true);
     return;
   }
 
@@ -276,7 +276,7 @@ document.getElementById('stdForm').addEventListener('submit', function(event) {
   const c = parseFloat(document.getElementById('stdInputC').value);
 
   if (!validateInputs([a, b, c])) {
-    alert("input Values must be between -300 and 300.")
+    displayMessage("Input values must be between -300 and 300.", true);
     return;
   }
 
@@ -291,7 +291,7 @@ document.getElementById('vertForm').addEventListener('submit', function(event) {
   const k = parseFloat(document.getElementById('vertInputK').value);
 
   if (!validateInputs([a, h, k])) {
-    alert("input Values must be between -300 and 300.")
+    displayMessage("Input values must be between -300 and 300.", true);
     return;
   }
 

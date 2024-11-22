@@ -34,7 +34,7 @@ function applySettings() {
   const newHeight = parseInt(heightInput.value);
 
   if (newWidth < 300 || newWidth > 1200 || newHeight < 300 || newHeight > 1200) {
-    alert('Canvas dimensions must be between 300 and 1200 pixels.');
+    displayMessage('Canvas dimensions must be between 300 and 1200 pixels.', true);
     widthInput.value = canvas.width;
     heightInput.value = canvas.height;
     return;
@@ -42,7 +42,7 @@ function applySettings() {
 
   const dp = parseInt(decimalPlaces);
   if (isNaN(dp) || dp < 0 || dp > 10) {
-    alert('Decimal places must be between 0 and 10.');
+    displayMessage('Decimal places must be between 0 and 10.', true);
     document.getElementById('decimalPlaces').value = 4;
     return;
   }
