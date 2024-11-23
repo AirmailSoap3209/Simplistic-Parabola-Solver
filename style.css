@@ -707,7 +707,7 @@ input[type="range"]::-moz-range-thumb:hover {
   padding: 20px;
   background-color: #f8f9fa;
   border-radius: 8px;
-  border-left: 4px solid #3498db;
+  border-left: 4px solid #2ecc71;
 }
 
 .settings-group h3 {
