@@ -19,6 +19,20 @@ An intuitive web-based tool for working with quadratic equations and parabolas. 
   - Visual representation of the parabola
   - Interactive plotting system
 
+## Interactive Features
+
+### Draggable Points
+- Enable/disable point dragging directly on the graph
+- Points remain draggable even in invalid configurations
+- Real-time visual feedback and error messages
+- Smooth point movement with validation checks
+
+### Grid Snap
+- Optional grid snapping for precise point placement
+- Adjustable snap size
+- Makes it easier to place points at exact coordinates
+- Toggle on/off in settings
+
 ## Getting Started
 
 ### Prerequisites
