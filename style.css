@@ -352,6 +352,7 @@ button, .button {
   flex: 1;
   text-align: left;
   padding-top: 0;
+  margin-bottom: 0;
 }
 
 .settings-row select,
@@ -827,4 +828,225 @@ input[type="range"]::-moz-range-thumb:hover {
   padding: 5px 10px;
   border-radius: 4px;
   margin: 0;
+}
+
+.test-results {
+  display: grid;
+  gap: 5px;
+  padding: 10px;
+  height: 1200px;
+  overflow-y: auto;
+}
+
+.test-results .summary {
+  font-size: 1.2em;
+  padding: 8px;
+  background-color: var(--hover-color);
+  border-radius: 4px;
+  font-weight: bold;
+  grid-column: 1 / -1;
+}
+
+.test-results .stats {
+  background-color: var(--hover-color);
+  padding: 8px;
+  border-radius: 4px;
+  font-weight: bold;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  grid-column: 1 / -1;
+  margin-bottom: 5px;
+  align-items: center;
+}
+
+.test-results .stats > span {
+  white-space: nowrap;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+.test-results .stats .pass-count {
+  color: #4CAF50;
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.test-results .stats .fail-count {
+  color: #f44336;
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+.test-results .test-name {
+  padding: 4px 8px;
+  margin: 2px 0;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95em;
+}
+
+.test-results .pass {
+  color: #4CAF50;
+  background-color: rgba(76, 175, 80, 0.05);
+  border-left: 3px solid #4CAF50;
+}
+
+.test-results .fail {
+  color: #f44336;
+  background-color: rgba(244, 67, 54, 0.05);
+  border-left: 3px solid #f44336;
+}
+
+.test-results .test-icon {
+  font-size: 1em;
+  min-width: 20px;
+  text-align: center;
+}
+
+.test-results .test-name .test-status {
+  margin-left: auto;
+  padding: 1px 6px;
+  border-radius: 2px;
+  font-size: 0.85em;
+}
+
+.test-results .pass .test-status {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.test-results .fail .test-status {
+  background-color: #f44336;
+  color: white;
+}
+
+.test-results .details {
+  margin: 0 0 3px 32px;
+  padding: 6px 8px;
+  background-color: var(--bg-color);
+  border-radius: 3px;
+  color: var(--text-color);
+  opacity: 0.9;
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+.test-results .category {
+  padding: 6px 8px;
+  margin: 8px 0 4px 0;
+  background-color: var(--hover-color);
+  border-radius: 3px;
+  font-weight: bold;
+  grid-column: 1 / -1;
+  font-size: 1em;
+}
+
+.test-results .category {
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.test-results .category::after {
+  content: '▼';
+  font-size: 0.8em;
+  transition: transform 0.2s;
+}
+
+.test-results .category.collapsed::after {
+  transform: rotate(-90deg);
+}
+
+.test-results .category-content {
+  display: grid;
+  gap: 2px;
+}
+
+.test-results .category-content.collapsed {
+  display: none;
+}
+
+/* Make test results container responsive */
+@media (min-width: 768px) {
+  .test-results {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+}
+
+/* Developer Options Styles */
+.collapsible-section {
+  margin: 10px 0;
+}
+
+.collapsible {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  cursor: pointer;
+  padding: 10px;
+  width: 100%;
+  border: 1px solid var(--border-color);
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+  transition: 0.3s;
+  border-radius: 4px;
+}
+
+.collapsible:hover {
+  background-color: var(--hover-color);
+}
+
+.collapsible:after {
+  content: '\002B';
+  color: var(--text-color);
+  font-weight: bold;
+  float: right;
+  margin-left: 5px;
+}
+
+.collapsible.active:after {
+  content: "\2212";
+}
+
+.content {
+  padding: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.2s ease-out;
+  background-color: var(--background-color);
+}
+
+.test-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  padding: 15px;
+}
+
+.test-button {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.test-button:hover {
+  background-color: var(--hover-color);
+}
+
+.test-results {
+  padding: 15px;
+  margin-top: 10px;
+  border-top: 1px solid var(--border-color);
+  font-family: monospace;
+  white-space: pre-wrap;
+  max-height: 1200px;
+  overflow-y: auto;
 }

@@ -236,6 +236,28 @@
             </div>
           </div>
 
+          <div class="settings-group">
+            <h3>Developer Options</h3>
+            <div class="collapsible-section">
+              <button type="button" class="collapsible">Test Suite</button>
+              <div class="content">
+                <div class="test-buttons">
+                  <button type="button" onclick="tests.runAllTests(event)">Run All Tests</button>
+                  <button type="button" onclick="tests.runTestCategory('basicInput', event)">Test Basic Input</button>
+                  <button type="button" onclick="tests.runTestCategory('threePoints', event)">Test Three Points</button>
+                  <button type="button" onclick="tests.runTestCategory('vertexPoint', event)">Test Vertex Point</button>
+                  <button type="button" onclick="tests.runTestCategory('draggableFeatures', event)">Test Draggable Features</button>
+                  <button type="button" onclick="tests.runTestCategory('methodSwitching', event)">Test Method Switching</button>
+                  <button type="button" onclick="tests.runTestCategory('tabSwitching', event)">Test Tab Switching</button>
+                  <button type="button" onclick="tests.runTestCategory('settings', event)">Test Settings</button>
+                  <button type="button" onclick="tests.runTestCategory('canvasInteractions', event)">Test Canvas Interactions</button>
+                  <button type="button" onclick="tests.runTestCategory('integration', event)">Test Integration</button>
+                </div>
+                <div id="testResults" class="test-results"></div>
+              </div>
+            </div>
+          </div>
+
           <div class="settings-actions">
             <button type="button" onclick="applySettings()">Apply Settings</button>
           </div>

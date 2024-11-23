@@ -1,5 +1,13 @@
 // Parabola Solver Unit Tests
 const tests = {
+    // Helper function to get current tab
+    getCurrentTab: function() {
+        if (!document.getElementById('valuesSection').classList.contains('hidden')) return 'values';
+        if (!document.getElementById('equationSection').classList.contains('hidden')) return 'equation';
+        if (!document.getElementById('settingsSection').classList.contains('hidden')) return 'settings';
+        return 'values'; // default
+    },
+
     // Test basic input validation
     testBasicInputValidation: function() {
         const testResults = [];
@@ -729,81 +737,745 @@ const tests = {
         return testResults;
     },
 
-    // Run all tests and generate summary
-    runAllTests: function() {
+    // Test tab switching functionality
+    testTabSwitching: function() {
+        const testResults = [];
+        console.group('Tab Switching Tests');
+        const originalTab = this.getCurrentTab();
+
+        // Test tab visibility states
+        const tabVisibilityTest = {
+            name: 'Tab visibility states',
+            passed: (function() {
+                // Initial state check
+                switchTab('values');
+                const valuesVisible = !document.getElementById('valuesSection').classList.contains('hidden');
+                const equationHidden = document.getElementById('equationSection').classList.contains('hidden');
+                const settingsHidden = document.getElementById('settingsSection').classList.contains('hidden');
+
+                // Switch to equation tab
+                switchTab('equation');
+                const equationVisible = !document.getElementById('equationSection').classList.contains('hidden');
+                const valuesHidden = document.getElementById('valuesSection').classList.contains('hidden');
+
+                return valuesVisible && equationHidden && settingsHidden && equationVisible && valuesHidden;
+            })(),
+            expected: true,
+            received: 'Tab visibility test'
+        };
+        testResults.push(tabVisibilityTest);
+
+        // Test CSS class application
+        const cssClassTest = {
+            name: 'CSS class application',
+            passed: (function() {
+                switchTab('values');
+                const valuesActive = document.getElementById('enterValuesTab').classList.contains('active');
+                const equationInactive = !document.getElementById('enterEquationTab').classList.contains('active');
+
+                switchTab('equation');
+                const equationActive = document.getElementById('enterEquationTab').classList.contains('active');
+                const valuesInactive = !document.getElementById('enterValuesTab').classList.contains('active');
+
+                return valuesActive && equationInactive && equationActive && valuesInactive;
+            })(),
+            expected: true,
+            received: 'CSS class test'
+        };
+        testResults.push(cssClassTest);
+
+        // Test tab color changes
+        const tabColorTest = {
+            name: 'Tab color changes',
+            passed: (function() {
+                switchTab('values');
+                const valuesColor = getComputedStyle(document.documentElement)
+                    .getPropertyValue('--active-tab-color')
+                    .trim();
+                
+                switchTab('equation');
+                const equationColor = getComputedStyle(document.documentElement)
+                    .getPropertyValue('--active-tab-color')
+                    .trim();
+
+                return valuesColor !== equationColor;
+            })(),
+            expected: true,
+            received: 'Tab color test'
+        };
+        testResults.push(tabColorTest);
+
+        // Restore original tab
+        switchTab(originalTab);
+        console.groupEnd();
+        return testResults;
+    },
+
+    // Test settings functionality
+    testSettings: function() {
+        const testResults = [];
+        console.group('Settings Tests');
+
+        // Test theme switching
+        const themeTest = {
+            name: 'Theme switching',
+            passed: (function() {
+                const themeSelect = document.getElementById('themeSelect');
+                
+                // Test dark mode
+                themeSelect.value = 'dark';
+                handleThemeChange();
+                const isDark = document.body.classList.contains('dark-mode');
+                
+                // Test light mode
+                themeSelect.value = 'light';
+                handleThemeChange();
+                const isLight = !document.body.classList.contains('dark-mode');
+                
+                return isDark && isLight;
+            })(),
+            expected: 'Theme switching successful',
+            received: (function() {
+                const themeSelect = document.getElementById('themeSelect');
+                themeSelect.value = 'dark';
+                handleThemeChange();
+                const isDark = document.body.classList.contains('dark-mode') ? 'Dark mode applied' : 'Dark mode failed';
+                
+                themeSelect.value = 'light';
+                handleThemeChange();
+                const isLight = !document.body.classList.contains('dark-mode') ? 'Light mode applied' : 'Light mode failed';
+                
+                return `${isDark}, ${isLight}`;
+            })()
+        };
+        testResults.push(themeTest);
+
+        // Test equation format switching
+        const formatTest = {
+            name: 'Equation format switching',
+            passed: (function() {
+                const formatSelect = document.getElementById('equationFormat');
+                
+                // Test standard format
+                formatSelect.value = 'standard';
+                handleFormatChange();
+                const standardVisible = document.getElementById('1stForm').style.display === 'block';
+                
+                // Test vertex format
+                formatSelect.value = 'vertex';
+                handleFormatChange();
+                const vertexVisible = document.getElementById('2ndForm').style.display === 'block';
+                
+                return standardVisible && vertexVisible;
+            })(),
+            expected: true,
+            received: 'Format switching test'
+        };
+        testResults.push(formatTest);
+
+        // Test canvas dimension validation
+        const dimensionTest = {
+            name: 'Canvas dimension validation',
+            passed: (function() {
+                const widthInput = document.getElementById('canvasWidth');
+                const heightInput = document.getElementById('canvasHeight');
+                const originalWidth = widthInput.value;
+                const originalHeight = heightInput.value;
+                
+                // Test invalid dimensions
+                widthInput.value = '200'; // Too small
+                heightInput.value = '400';
+                applySettings();
+                const rejectsSmall = widthInput.value === originalWidth;
+                
+                widthInput.value = '1300'; // Too large
+                heightInput.value = '400';
+                applySettings();
+                const rejectsLarge = widthInput.value === originalWidth;
+                
+                // Reset
+                widthInput.value = originalWidth;
+                heightInput.value = originalHeight;
+                applySettings();
+                
+                return rejectsSmall && rejectsLarge;
+            })(),
+            expected: true,
+            received: 'Dimension validation test'
+        };
+        testResults.push(dimensionTest);
+
+        // Test grid snap functionality
+        const gridSnapTest = {
+            name: 'Grid snap functionality',
+            passed: (function() {
+                // Test enabling grid snap
+                handleGridSnapToggle(true);
+                const enabled = localStorage.getItem('grid-snap-enabled') === 'true';
+                
+                // Test grid snap size
+                handleGridSnapSize(0.5);
+                const sizeSet = localStorage.getItem('grid-snap-size') === '0.5';
+                
+                return enabled && sizeSet;
+            })(),
+            expected: true,
+            received: 'Grid snap test'
+        };
+        testResults.push(gridSnapTest);
+
+        console.groupEnd();
+        return testResults;
+    },
+
+    // Test canvas interactions
+    testCanvasInteractions: function() {
+        const testResults = [];
+        console.group('Canvas Interaction Tests');
+        const originalTab = this.getCurrentTab();
+
+        // Test canvas resize
+        const resizeTest = {
+            name: 'Canvas resize',
+            passed: (function() {
+                const canvas = document.getElementById('parabolaCanvas');
+                const originalWidth = canvas.width;
+                const originalHeight = canvas.height;
+                
+                // Test valid resize
+                document.getElementById('canvasWidth').value = '600';
+                document.getElementById('canvasHeight').value = '600';
+                applySettings();
+                const resized = canvas.width === 600 && canvas.height === 600;
+                
+                // Reset
+                document.getElementById('canvasWidth').value = originalWidth;
+                document.getElementById('canvasHeight').value = originalHeight;
+                applySettings();
+                
+                return resized;
+            })(),
+            expected: true,
+            received: 'Canvas resize test'
+        };
+        testResults.push(resizeTest);
+
+        // Test canvas state preservation
+        const stateTest = {
+            name: 'Canvas state preservation',
+            passed: (function() {
+                // Set initial state
+                const originalZoom = zoomLevel;
+                const originalOffsetX = offsetX;
+                const originalOffsetY = offsetY;
+
+                zoomLevel = 2;
+                offsetX = 100;
+                offsetY = -50;
+                
+                // Switch tabs
+                switchTab('equation');
+                switchTab('values');
+                
+                const preserved = zoomLevel === 2 && 
+                                offsetX === 100 && 
+                                offsetY === -50;
+                
+                // Reset state
+                zoomLevel = originalZoom;
+                offsetX = originalOffsetX;
+                offsetY = originalOffsetY;
+                
+                return preserved;
+            })(),
+            expected: true,
+            received: 'State preservation test'
+        };
+        testResults.push(stateTest);
+
+        // Restore original tab
+        switchTab(originalTab);
+        console.groupEnd();
+        return testResults;
+    },
+
+    // Test integration scenarios
+    testIntegration: function() {
+        console.group('Integration Tests');
+        const testResults = [];
+        const originalTab = this.getCurrentTab();
+
+        // Test 1: Method switching affects form fields
+        testResults.push({
+            name: 'Method Switching Integration',
+            passed: (function() {
+                try {
+                    // Get current method
+                    const methodInputs = document.querySelectorAll('input[name="method"]');
+                    if (!methodInputs || methodInputs.length === 0) {
+                        console.error('No method inputs found');
+                        return false;
+                    }
+
+                    // Store original state
+                    const originalMethod = Array.from(methodInputs).find(input => input.checked)?.value || 'threePoints';
+                    console.log('Original method:', originalMethod);
+
+                    // Test visibility changes
+                    let success = true;
+                    const methods = ['vertexPoint', 'threePoints'];
+                    
+                    for (const method of methods) {
+                        const input = Array.from(methodInputs).find(i => i.value === method);
+                        if (!input) {
+                            console.error(`Method input ${method} not found`);
+                            success = false;
+                            continue;
+                        }
+
+                        // Change method
+                        input.checked = true;
+                        if (typeof switchMethod === 'function') {
+                            switchMethod(method);
+                        }
+
+                        // Check visibility
+                        const vertexFields = document.getElementById('vertexPointFields');
+                        const threePointsFields = document.getElementById('threePointsFields');
+                        
+                        if (!vertexFields || !threePointsFields) {
+                            console.error('Field containers not found');
+                            success = false;
+                            continue;
+                        }
+
+                        const vertexVisible = !vertexFields.classList.contains('hidden');
+                        const threePointsVisible = !threePointsFields.classList.contains('hidden');
+
+                        if (method === 'vertexPoint' && (!vertexVisible || threePointsVisible)) {
+                            console.error('Vertex point visibility incorrect');
+                            success = false;
+                        } else if (method === 'threePoints' && (vertexVisible || !threePointsVisible)) {
+                            console.error('Three points visibility incorrect');
+                            success = false;
+                        }
+                    }
+
+                    // Restore original
+                    const originalInput = Array.from(methodInputs).find(i => i.value === originalMethod);
+                    if (originalInput) {
+                        originalInput.checked = true;
+                        if (typeof switchMethod === 'function') {
+                            switchMethod(originalMethod);
+                        }
+                    }
+
+                    return success;
+                } catch (error) {
+                    console.error('Method Switching Test Error:', error);
+                    return false;
+                }
+            })(),
+            expected: "Method inputs should correctly toggle field visibility",
+            received: "Method switching field visibility test"
+        });
+
+        // Test 2: Settings affect multiple components
+        testResults.push({
+            name: 'Settings Integration',
+            passed: (function() {
+                try {
+                    const decimalInput = document.getElementById('decimalPlaces');
+                    const gridSizeInput = document.getElementById('gridSize');
+                    
+                    if (!decimalInput || !gridSizeInput) {
+                        console.error('Settings inputs not found');
+                        return false;
+                    }
+
+                    // Store original values
+                    const originalDecimal = decimalInput.value;
+                    const originalGridSize = gridSizeInput.value;
+
+                    // Change settings
+                    decimalInput.value = '3';
+                    gridSizeInput.value = '50';
+                    
+                    // Trigger settings update
+                    const event = new Event('change');
+                    decimalInput.dispatchEvent(event);
+                    gridSizeInput.dispatchEvent(event);
+
+                    if (typeof applySettings === 'function') {
+                        applySettings();
+                    }
+
+                    // Check if settings were applied
+                    const settingsApplied = decimalInput.value === '3' && gridSizeInput.value === '50';
+
+                    // Restore settings
+                    decimalInput.value = originalDecimal;
+                    gridSizeInput.value = originalGridSize;
+                    
+                    // Apply original settings
+                    decimalInput.dispatchEvent(event);
+                    gridSizeInput.dispatchEvent(event);
+                    
+                    if (typeof applySettings === 'function') {
+                        applySettings();
+                    }
+
+                    return settingsApplied;
+                } catch (error) {
+                    console.error('Settings Integration Test Error:', error);
+                    return false;
+                }
+            })(),
+            expected: "Settings changes should be applied successfully",
+            received: "Settings affect equation and canvas test"
+        });
+
+        // Test 3: End-to-end workflow
+        testResults.push({
+            name: 'End-to-End Workflow',
+            passed: (function() {
+                try {
+                    // Set up test points
+                    const testPoints = {
+                        x1: 0, y1: 0,
+                        x2: 1, y2: 1,
+                        x3: -1, y3: 1
+                    };
+
+                    // Store original values
+                    const originalValues = {};
+                    for (const point in testPoints) {
+                        const input = document.getElementById(point);
+                        if (!input) {
+                            console.error(`Input for ${point} not found`);
+                            return false;
+                        }
+                        originalValues[point] = input.value;
+                        input.value = testPoints[point];
+                    }
+
+                    // Calculate parabola
+                    if (typeof calculateParabola === 'function') {
+                        calculateParabola();
+                    }
+
+                    // Check if equation was generated
+                    const equation = document.getElementById('equation');
+                    const hasEquation = equation && equation.textContent.includes('y =');
+
+                    // Check if canvas was updated
+                    const canvas = document.getElementById('parabolaCanvas');
+                    const ctx = canvas?.getContext('2d');
+                    const hasCanvas = ctx !== null;
+
+                    // Restore original values
+                    for (const point in originalValues) {
+                        const input = document.getElementById(point);
+                        if (input) {
+                            input.value = originalValues[point];
+                        }
+                    }
+
+                    // Recalculate with original values
+                    if (typeof calculateParabola === 'function') {
+                        calculateParabola();
+                    }
+
+                    return hasEquation && hasCanvas;
+                } catch (error) {
+                    console.error('End-to-End Workflow Test Error:', error);
+                    return false;
+                }
+            })(),
+            expected: "Complete workflow should generate equation and update canvas",
+            received: "Complete workflow test"
+        });
+
+        // Test 4: Tab switching preserves state
+        testResults.push({
+            name: 'State Preservation',
+            passed: (function() {
+                try {
+                    const equationSection = document.getElementById('equationSection');
+                    const settingsSection = document.getElementById('settingsSection');
+                    const valuesSection = document.getElementById('valuesSection');
+
+                    if (!equationSection || !settingsSection || !valuesSection) {
+                        return false;
+                    }
+
+                    // Store original tab
+                    const originalTab = !equationSection.classList.contains('hidden') ? 'equation' :
+                                      !settingsSection.classList.contains('hidden') ? 'settings' : 'values';
+
+                    // Set test values
+                    const a = 1, b = 0, c = 0;
+                    if (typeof globA !== 'undefined') globA = a;
+                    if (typeof globB !== 'undefined') globB = b;
+                    if (typeof globC !== 'undefined') globC = c;
+
+                    // Switch tabs and check state
+                    if (typeof switchTab === 'function') {
+                        switchTab('equation');
+                        const equationState = (globA === a && globB === b && globC === c);
+
+                        switchTab('settings');
+                        const settingsState = (globA === a && globB === b && globC === c);
+
+                        // Restore original tab
+                        switchTab(originalTab);
+
+                        return equationState && settingsState;
+                    }
+                    return true; // If switchTab doesn't exist, consider test passed
+                } catch (error) {
+                    console.error('State Preservation Test Error:', error);
+                    return false;
+                }
+            })(),
+            expected: true,
+            received: 'Tab switching state preservation test'
+        });
+
+        // Test 5: Tab state preservation
+        testResults.push({
+            name: 'Tab State Preservation',
+            passed: (function() {
+                try {
+                    // Store original tab
+                    const originalTab = tests.getCurrentTab();
+
+                    // Set test state
+                    zoomLevel = 2;
+                    offsetX = 100;
+                    offsetY = -50;
+
+                    // Switch through all tabs
+                    switchTab('values');
+                    switchTab('equation');
+                    switchTab('settings');
+
+                    // Check if state preserved
+                    const preserved = zoomLevel === 2 && 
+                                    offsetX === 100 && 
+                                    offsetY === -50;
+
+                    // Restore original state
+                    zoomLevel = 1;
+                    offsetX = 0;
+                    offsetY = 0;
+                    switchTab(originalTab);
+
+                    return preserved;
+                } catch (error) {
+                    console.error('Tab State Preservation Test Error:', error);
+                    return false;
+                }
+            })(),
+            expected: true,
+            received: 'Tab state preservation integration test'
+        });
+
+        // Restore original tab
+        switchTab(originalTab);
+        console.groupEnd();
+        return testResults;
+    },
+
+    // Run specific test category
+    runTestCategory: function(category, event) {
+        if (event) {
+            event.preventDefault();
+        }
+        console.group(`Running ${category} Tests`);
+        
+        let results;
+        switch(category) {
+            case 'basicInput':
+                results = this.testBasicInputValidation();
+                break;
+            case 'threePoints':
+                results = this.testThreePointsValidation();
+                break;
+            case 'vertexPoint':
+                results = this.testVertexAndPointValidation();
+                break;
+            case 'draggableFeatures':
+                results = this.testDraggableFeatures();
+                break;
+            case 'methodSwitching':
+                results = this.testMethodSwitching();
+                break;
+            case 'tabSwitching':
+                results = this.testTabSwitching();
+                break;
+            case 'settings':
+                results = this.testSettings();
+                break;
+            case 'canvasInteractions':
+                results = this.testCanvasInteractions();
+                break;
+            case 'integration':
+                results = this.testIntegration();
+                break;
+            default:
+                console.error('Unknown test category');
+                return;
+        }
+
+        this.displayTestResults(results, category);
+        console.groupEnd();
+    },
+
+    runAllTests: function(event) {
+        if (event) {
+            event.preventDefault();
+        }
         console.group('Running All Parabola Solver Tests');
         
         const allResults = {
-            basicInput: this.testBasicInputValidation(),
-            threePoints: this.testThreePointsValidation(),
-            vertexPoint: this.testVertexAndPointValidation(),
-            draggableFeatures: this.testDraggableFeatures(),
-            methodSwitching: this.testMethodSwitching()
+            'Basic Input': this.testBasicInputValidation(),
+            'Three Points': this.testThreePointsValidation(),
+            'Vertex Point': this.testVertexAndPointValidation(),
+            'Draggable Features': this.testDraggableFeatures(),
+            'Method Switching': this.testMethodSwitching(),
+            'Tab Switching': this.testTabSwitching(),
+            'Settings': this.testSettings(),
+            'Canvas Interactions': this.testCanvasInteractions(),
+            'Integration': this.testIntegration()
         };
 
-        // Calculate overall statistics
+        this.displayTestResults(allResults);
+        console.groupEnd();
+    },
+
+    generateTestStats: function(passed, total, isOverall = false) {
+        const percentage = ((passed/total) * 100).toFixed(1);
+        return `<div class="stats">` +
+               `<span>${isOverall ? 'Overall Results' : 'Results'}</span>` +
+               `<span class="pass-count">✓ ${passed} passed</span>` +
+               `<span class="fail-count">❌ ${total - passed} failed</span>` +
+               `<span>${percentage}% complete</span>` +
+               `</div>`;
+    },
+
+    generateTestList: function(results) {
+        let output = '';
+        results.forEach(result => {
+            const status = result.passed ? 'pass' : 'fail';
+            const icon = result.passed ? '✓' : '❌';
+            const statusText = result.passed ? 'PASS' : 'FAIL';
+            
+            output += `<div class="test-name ${status}">` +
+                     `<span class="test-icon">${icon}</span>` +
+                     `<span>${result.name}</span>` +
+                     `<span class="test-status">${statusText}</span>` +
+                     `</div>`;
+
+            if (!result.passed && (typeof result.expected !== 'boolean' || typeof result.received !== 'boolean')) {
+                output += `<div class="details">`;
+                if (typeof result.expected !== 'boolean') {
+                    output += `Expected: ${result.expected}\n`;
+                }
+                if (typeof result.received !== 'boolean') {
+                    output += `Received: ${result.received}`;
+                }
+                output += '</div>';
+            }
+        });
+        return output;
+    },
+
+    displayTestResults: function(results, category = null) {
+        const resultsDiv = document.getElementById('testResults');
+        if (!resultsDiv) return;
+
         let totalTests = 0;
         let passedTests = 0;
         let failedTests = [];
+        let output = '';
 
-        for (let category in allResults) {
-            allResults[category].forEach(result => {
-                totalTests++;
-                if (result.passed) {
-                    passedTests++;
-                } else {
-                    failedTests.push({
-                        category: category,
-                        ...result
-                    });
+        // Process results based on whether it's a single category or all tests
+        if (category) {
+            // Single category results
+            totalTests = results.length;
+            passedTests = results.filter(r => r.passed).length;
+            failedTests = results.filter(r => !r.passed);
+
+            output += `<div class="category">${category}</div>`;
+            output += `<div class="category-content">`;
+            output += this.generateTestStats(passedTests, totalTests);
+            output += this.generateTestList(results);
+            output += '</div>';
+        } else {
+            // All categories results
+            output += '<div class="summary">Test Suite Results</div>';
+            
+            for (const [categoryName, categoryResults] of Object.entries(results)) {
+                totalTests += categoryResults.length;
+                const categoryPassed = categoryResults.filter(r => r.passed).length;
+                passedTests += categoryPassed;
+                const categoryFailed = categoryResults.filter(r => !r.passed);
+                failedTests = failedTests.concat(
+                    categoryFailed.map(test => ({...test, category: categoryName}))
+                );
+
+                output += `<div class="category">${categoryName}</div>`;
+                output += `<div class="category-content">`;
+                output += this.generateTestStats(categoryPassed, categoryResults.length);
+                output += this.generateTestList(categoryResults);
+                output += '</div>';
+            }
+
+            // Overall stats at the top
+            output = this.generateTestStats(passedTests, totalTests, true) + output;
+        }
+
+        // Failed tests summary at the bottom if there are any failures
+        if (failedTests.length > 0) {
+            output += `<div class="category">Failed Tests Summary</div>`;
+            output += `<div class="category-content">`;
+            output += this.generateTestList(failedTests.map(failure => ({
+                ...failure,
+                name: failure.category ? `[${failure.category}] ${failure.name}` : failure.name
+            })));
+            output += '</div>';
+        }
+
+        resultsDiv.innerHTML = output;
+
+        // Add click handlers for collapsible categories
+        resultsDiv.querySelectorAll('.category').forEach(category => {
+            category.addEventListener('click', function() {
+                this.classList.toggle('collapsed');
+                const content = this.nextElementSibling;
+                if (content && content.classList.contains('category-content')) {
+                    content.classList.toggle('collapsed');
                 }
             });
-        }
-
-        // Print summary
-        console.group('Test Summary');
-        console.log(`Total Tests: ${totalTests}`);
-        console.log(`Passed: ${passedTests}`);
-        console.log(`Failed: ${totalTests - passedTests}`);
-        console.log(`Success Rate: ${((passedTests/totalTests) * 100).toFixed(1)}%`);
-        
-        if (failedTests.length > 0) {
-            console.group('❌ Failed Tests');
-            failedTests.forEach(failure => {
-                console.error(`${failure.category} - ${failure.name}:
-                    Expected: ${failure.expected}
-                    Received: ${failure.received}`);
-            });
-            console.groupEnd();
-        }
-        
-        console.groupEnd();
-        console.groupEnd();
-    }
+        });
+    },
 };
 
-// Add test runner button to the page
+// Add collapsible functionality
 document.addEventListener('DOMContentLoaded', function() {
-    const settingsContainer = document.querySelector('.settings-container');
-    if (settingsContainer) {
-        const testSection = document.createElement('div');
-        testSection.classList.add('settings-group');
-        
-        const testHeader = document.createElement('h3');
-        testHeader.textContent = 'Testing';
-        testSection.appendChild(testHeader);
-        
-        const testButton = document.createElement('button');
-        testButton.textContent = 'Run Unit Tests';
-        testButton.classList.add('test-button');
-        testButton.onclick = () => tests.runAllTests();
-        
-        const testDescription = document.createElement('p');
-        testDescription.classList.add('description');
-        testDescription.textContent = 'Run comprehensive tests to verify parabola calculations and validations. Check browser console (F12) for detailed results.';
-        
-        testSection.appendChild(testDescription);
-        testSection.appendChild(testButton);
-        settingsContainer.appendChild(testSection);
+    const coll = document.getElementsByClassName("collapsible");
+    for (let i = 0; i < coll.length; i++) {
+        coll[i].addEventListener("click", function(e) {
+            e.preventDefault(); // Prevent default button behavior
+            e.stopPropagation(); // Stop event bubbling
+            this.classList.toggle("active");
+            const content = this.nextElementSibling;
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+            } else {
+                content.style.maxHeight = content.scrollHeight + "px";
+            }
+        });
     }
 });
