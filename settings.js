@@ -103,6 +103,21 @@ function updateDecimalPlaces(value) {
   }
 }
 
+// Add grid snap settings
+function handleGridSnapToggle(enabled) {
+  localStorage.setItem('grid-snap-enabled', enabled);
+  if (window.toggleGridSnap) {
+    window.toggleGridSnap(enabled);
+  }
+}
+
+function handleGridSnapSize(value) {
+  localStorage.setItem('grid-snap-size', value);
+  if (window.updateGridSnapSize) {
+    window.updateGridSnapSize(value);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   const savedTheme = localStorage.getItem(STORAGE_KEY) || 'light';
   document.getElementById('themeSelect').value = savedTheme;
@@ -149,4 +164,19 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('decimalPlaces').addEventListener('input', function() {
     updateDecimalPlaces(this.value);
   });
+
+  // Load grid snap settings
+  const gridSnapEnabled = localStorage.getItem('grid-snap-enabled') === 'true';
+  const gridSnapSize = localStorage.getItem('grid-snap-size') || '0.5';
+  
+  document.getElementById('gridSnapToggle').checked = gridSnapEnabled;
+  document.getElementById('gridSnapSize').value = gridSnapSize;
+  document.getElementById('gridSnapValue').textContent = gridSnapSize;
+  
+  if (window.toggleGridSnap) {
+    window.toggleGridSnap(gridSnapEnabled);
+  }
+  if (window.updateGridSnapSize) {
+    window.updateGridSnapSize(gridSnapSize);
+  }
 });

@@ -59,4 +59,4 @@ This project is licensed under Creative Commons - see the footer of the applicat
 
 ## Version
 
-Current Version: v0.20
+Current Version: v0.21

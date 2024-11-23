@@ -14,6 +14,10 @@ let isInteractiveMode = false;
 let selectedPoint = null;
 let pointRadius = 5;
 
+// Add new variables for grid snap
+let gridSnapEnabled = false;
+let gridSnapSize = 0.5;
+
 let lastFrameTime = 0;
 const minFrameInterval = 1000 / 60; // Limit to 60 FPS
 let pendingUpdate = false;
@@ -274,24 +278,55 @@ function setupCanvas(canvasId) {
 
   canvas.addEventListener('mousemove', function(e) {
     const rect = canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
+    const mouseX = (e.clientX - rect.left - canvas.width / 2 - offsetX) / zoomLevel;
+    const mouseY = -(e.clientY - rect.top - canvas.height / 2 - offsetY) / zoomLevel;
 
     if (isInteractiveMode && selectedPoint) {
-      // Convert mouse coordinates to graph coordinates
-      const graphX = ((mouseX - canvas.width/2 - offsetX) / (20 * zoomLevel)).toFixed(2);
-      const graphY = (-(mouseY - canvas.height/2 - offsetY) / (20 * zoomLevel)).toFixed(2);
+      const methodId = document.querySelector('.method:not([style*="display: none"])').id;
+      
+      // Convert screen coordinates to graph coordinates (1 unit = 20 pixels)
+      let graphX = mouseX / 20;
+      let graphY = mouseY / 20;
 
-      if (selectedPoint.type === 'directrix') {
-        // Only update y-coordinate for directrix
-        document.getElementById(selectedPoint.inputs[0]).value = graphY;
-      } else {
-        // Update both coordinates for points
-        document.getElementById(selectedPoint.inputs[0]).value = graphX;
-        document.getElementById(selectedPoint.inputs[1]).value = graphY;
+      // Apply grid snap if enabled
+      if (gridSnapEnabled) {
+        graphX = snapToGrid(graphX);
+        graphY = snapToGrid(graphY);
       }
 
-      // Use the optimized update function
+      // Always update the input fields based on the method
+      switch(methodId) {
+        case 'method1':
+          if (selectedPoint.inputs[0] === 'x1') {
+            document.getElementById('x1').value = graphX.toFixed(2);
+            document.getElementById('y1').value = graphY.toFixed(2);
+          } else if (selectedPoint.inputs[0] === 'x2') {
+            document.getElementById('x2').value = graphX.toFixed(2);
+            document.getElementById('y2').value = graphY.toFixed(2);
+          } else if (selectedPoint.inputs[0] === 'x3') {
+            document.getElementById('x3').value = graphX.toFixed(2);
+            document.getElementById('y3').value = graphY.toFixed(2);
+          }
+          break;
+        case 'method2':
+          if (selectedPoint.inputs[0] === 'vertX') {
+            document.getElementById('vertX').value = graphX.toFixed(2);
+            document.getElementById('vertY').value = graphY.toFixed(2);
+          } else if (selectedPoint.inputs[0] === 'vertX1') {
+            document.getElementById('vertX1').value = graphX.toFixed(2);
+            document.getElementById('vertY1').value = graphY.toFixed(2);
+          }
+          break;
+        case 'method3':
+          if (selectedPoint.type === 'focus') {
+            document.getElementById('xFocus').value = graphX.toFixed(2);
+            document.getElementById('yFocus').value = graphY.toFixed(2);
+          } else if (selectedPoint.type === 'directrix') {
+            document.getElementById('yDirectrix').value = graphY.toFixed(2);
+          }
+          break;
+      }
+      // Always update the display, even if validation will fail
       updateParabola();
     } else if (isDragging) {
       // Normal canvas dragging
@@ -347,6 +382,22 @@ function setupCanvas(canvasId) {
   });
 }
 
+function toggleGridSnap(enabled) {
+  gridSnapEnabled = enabled;
+  updateParabola();
+}
+
+function updateGridSnapSize(size) {
+  gridSnapSize = parseFloat(size);
+  document.getElementById('gridSnapValue').textContent = size;
+  updateParabola();
+}
+
+function snapToGrid(value) {
+  if (!gridSnapEnabled) return value;
+  return Math.round(value / gridSnapSize) * gridSnapSize;
+}
+
 function updateParabola() {
     if (pendingUpdate) return;
     pendingUpdate = true;
@@ -358,9 +409,15 @@ function updateParabola() {
             return;
         }
 
+        // Always redraw points even if validation fails
+        plotThing(globA || 0, globB || 0, globC || 0);
+
+        // Try to update equation
         const form = document.querySelector('.method:not([style*="display: none"]) form');
-        const submitEvent = new Event('submit');
-        form.dispatchEvent(submitEvent);
+        if (form) {
+            const submitEvent = new Event('submit');
+            form.dispatchEvent(submitEvent);
+        }
         
         lastFrameTime = currentTime;
         pendingUpdate = false;

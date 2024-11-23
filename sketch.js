@@ -8,8 +8,6 @@ function validateInputs(values, limit = 300) {
 }
 
 function validateThreePoints(x1, y1, x2, y2, x3, y3) {
-
-
   const minDistance = 0.01;
   const dist12 = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
   const dist23 = Math.sqrt(Math.pow(x3 - x2, 2) + Math.pow(y3 - y2, 2));
@@ -26,6 +24,16 @@ function validateThreePoints(x1, y1, x2, y2, x3, y3) {
 }
 
 function validateVertexAndPoint(vx, vy, px, py) {
+  const minDistance = 0.01;
+  const distance = Math.sqrt(Math.pow(px - vx, 2) + Math.pow(py - vy, 2));
+
+  if (distance < minDistance) {
+    return {
+      valid: false,
+      error: "The vertex and point are too close together. Please space them further apart."
+    };
+  }
+
   if (vx === px && vy === py) {
     return {
       valid: false,
@@ -149,6 +157,49 @@ function updateEquationDisplay(a, b, c) {
   plotThing(a, b, c, 'equParabolaCanvas');
 }
 
+function solveFromPoints(x1, y1, x2, y2, x3, y3) {
+  let a1 = x1 * x1, b1 = x1, c1 = 1, r1 = y1;
+  let a2 = x2 * x2, b2 = x2, c2 = 1, r2 = y2;
+  let a3 = x3 * x3, b3 = x3, c3 = 1, r3 = y3;
+  
+  let det =  a1 * (b2 * c3 - b3 * c2) - b1 * (a2 * c3 - a3 * c2) + c1 * (a2 * b3 - a3 * b2);
+
+  if (det === 0) {
+    return { error: "Invalid Input: Please ensure all points are unique and try again." };
+  }
+
+  let eq1 = {a: a2 - a1, b: b2 - b1, c: c2 - c1, result: r2 - r1};
+  let eq2 = {a: a3 - a1, b: b3 - b1, c: c3 - c1, result: r3 - r1};
+
+  var a = (eq1.result * eq2.b - eq2.result * eq1.b) / (eq1.a * eq2.b -eq2.a * eq1.b);
+  var b = (eq1.result - eq1.a * a) / eq1.b;
+  var c = r1 - (a * a1 + b * b1);
+
+  return { a, b, c };
+}
+
+function solveFromVertexAndPoint(vx, vy, px, py) {
+  const a = (py - vy) / Math.pow((px - vx), 2);
+  const {b, c} = vertexToStandard(a, vx, vy);
+
+  return { a, b, c };
+}
+
+function solveFromFocusAndDirectrix(fx, fy, directrixY) {
+  const h = fx;
+  const k = (fy + directrixY) / 2;
+  const p = fy - k;
+
+  if (p === 0) {
+    return { error: 'Invalid focus-directrix configuration. The parabola cannot be calculated.' };
+  }
+
+  const a = 1 / (4 * p);
+  const {b, c} = vertexToStandard(a, h, k);
+
+  return { a, b, c };
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const format = localStorage.getItem('preferred-format') || 'standard';
     isVertexForm = format === 'vertex';
@@ -163,7 +214,6 @@ document.getElementById('equationFormat').addEventListener('change', function() 
 
 document.getElementById('3ptForm').addEventListener('submit', function(event) {
   event.preventDefault();
-  const errorElement = document.getElementById('3ptError');
   
   const x1 = parseFloat(document.getElementById('x1').value);
   const y1 = parseFloat(document.getElementById('y1').value);
@@ -172,6 +222,10 @@ document.getElementById('3ptForm').addEventListener('submit', function(event) {
   const x3 = parseFloat(document.getElementById('x3').value);
   const y3 = parseFloat(document.getElementById('y3').value);
 
+  // Always plot the points
+  plotThing(globA || 0, globB || 0, globC || 0);
+
+  // Check validation and update equation if valid
   if (!validateInputs([x1, y1, x2, y2, x3, y3])) {
     displayMessage("All values must be numbers between -300 and 300.", true);
     return;
@@ -183,37 +237,28 @@ document.getElementById('3ptForm').addEventListener('submit', function(event) {
     return;
   }
 
-  errorElement.textContent = "";
-  let a1 = x1 * x1, b1 = x1, c1 = 1, r1 = y1;
-  let a2 = x2 * x2, b2 = x2, c2 = 1, r2 = y2;
-  let a3 = x3 * x3, b3 = x3, c3 = 1, r3 = y3;
-  
-  let det =  a1 * (b2 * c3 - b3 * c2) - b1 * (a2 * c3 - a3 * c2) + c1 * (a2 * b3 - a3 * b2);
-
-  if (det === 0) {
-    displayMessage("Invalid Input: Please ensure all points are unique and try again.", true);
+  // Only calculate equation if validation passes
+  const result = solveFromPoints(x1, y1, x2, y2, x3, y3);
+  if (result.error) {
+    displayMessage(result.error, true);
     return;
   }
 
-  let eq1 = {a: a2 - a1, b: b2 - b1, c: c2 - c1, result: r2 - r1};
-  let eq2 = {a: a3 - a1, b: b3 - b1, c: c3 - c1, result: r3 - r1};
-
-  var a = (eq1.result * eq2.b - eq2.result * eq1.b) / (eq1.a * eq2.b -eq2.a * eq1.b);
-  var b = (eq1.result - eq1.a * a) / eq1.b;
-  var c = r1 - (a * a1 + b * b1);
-
-  updateEquationDisplay(a, b, c);
+  updateEquationDisplay(result.a, result.b, result.c);
 });
 
 document.getElementById('2ptForm').addEventListener('submit', function(event) {
   event.preventDefault();
-  const errorElement = document.getElementById('2ptError');
   
   const vx = parseFloat(document.getElementById('vertX').value);
   const vy = parseFloat(document.getElementById('vertY').value);
   const px = parseFloat(document.getElementById('vertX1').value);
   const py = parseFloat(document.getElementById('vertY1').value);
 
+  // Always plot the points
+  plotThing(globA || 0, globB || 0, globC || 0);
+
+  // Check validation and update equation if valid
   if (!validateInputs([vx, vy, px, py])) {
     displayMessage("All values must be numbers between -300 and 300.", true);
     return;
@@ -225,47 +270,46 @@ document.getElementById('2ptForm').addEventListener('submit', function(event) {
     return;
   }
 
-  errorElement.textContent = "";
-  const a = (py - vy) / Math.pow((px - vx), 2);
-  const {b, c} = vertexToStandard(a, vx, vy);
+  // Only calculate equation if validation passes
+  const result = solveFromVertexAndPoint(vx, vy, px, py);
+  if (result.error) {
+    displayMessage(result.error, true);
+    return;
+  }
 
-  updateEquationDisplay(a, b, c)
+  updateEquationDisplay(result.a, result.b, result.c);
 });
 
 document.getElementById('focusForm').addEventListener('submit', function(event) {
   event.preventDefault();
-  const errorElement = document.getElementById('focusError');
   
   const fx = parseFloat(document.getElementById('xFocus').value);
   const fy = parseFloat(document.getElementById('yFocus').value);
-  const directrix = parseFloat(document.getElementById('yDirectrix').value);
+  const directrixY = parseFloat(document.getElementById('yDirectrix').value);
 
-  if (!validateInputs([fx, fy, directrix])) {
+  // Always plot the points
+  plotThing(globA || 0, globB || 0, globC || 0);
+
+  // Check validation and update equation if valid
+  if (!validateInputs([fx, fy, directrixY])) {
     displayMessage("All values must be numbers between -300 and 300.", true);
     return;
   }
 
-  const validation = validateFocusAndDirectrix(fx, fy, directrix);
+  const validation = validateFocusAndDirectrix(fx, fy, directrixY);
   if (!validation.valid) {
     displayMessage(validation.error, true);
     return;
   }
 
-  errorElement.textContent = "";
-  const h = fx;
-  const k = (fy + directrix) / 2;
-  const p = fy - k;
-
-  if (p === 0) {
-    document.getElementById('equation').innerText = 'Invalid focus-directrix configuration. The parabola cannot be calculated.';
+  // Only calculate equation if validation passes
+  const result = solveFromFocusAndDirectrix(fx, fy, directrixY);
+  if (result.error) {
+    displayMessage(result.error, true);
     return;
   }
 
-  const a = 1 / (4 * p);
-  const {b, c} = vertexToStandard(a, h, k);
-
-  updateEquationDisplay(a, b, c);
-
+  updateEquationDisplay(result.a, result.b, result.c);
 });
 
 document.getElementById('stdForm').addEventListener('submit', function(event) {
