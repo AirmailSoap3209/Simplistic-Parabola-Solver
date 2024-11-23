@@ -57,30 +57,90 @@ function applySettings() {
 
 function exportGraph(canvasId) {
   const canvas = document.getElementById(canvasId);
-  let equation = document.getElementById('equation').innerText;
-
-  if (equation.includes("y = ")) {
-    equation = "y = " + equation.split("y = ")[1];
+  
+  // Get the actual equation from the equation display element and extract just the y= part
+  const equationElement = document.getElementById('equation');
+  let equationText = equationElement ? equationElement.textContent : '';
+  if (equationText.includes("y = ")) {
+    equationText = equationText.split("y = ")[1];
+    equationText = "y = " + equationText;
   }
-
+  
+  // Create a temporary canvas with extra space for text
   const tempCanvas = document.createElement('canvas');
   tempCanvas.width = canvas.width;
-  tempCanvas.height = canvas.height;
+  tempCanvas.height = canvas.height + 80;
   const tempCtx = tempCanvas.getContext('2d');
 
+  // Fill background
   tempCtx.fillStyle = 'white';
   tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
 
-  tempCtx.drawImage(canvas, 0, 0);
+  // Draw the original canvas content
+  tempCtx.drawImage(canvas, 0, 40);
 
-  tempCtx.font = 'bold 32px Arial';
-  tempCtx.fillStyle = '#e76c3c';
-  tempCtx.textAlign = 'left';
+  // Draw equation at the top
+  tempCtx.font = 'bold 20px Arial';
+  tempCtx.fillStyle = '#000000';
+  tempCtx.textAlign = 'center';
+  tempCtx.fillText(equationText, tempCanvas.width / 2, 25);
 
-  tempCtx.fillText(equation, 20, 30)
+  // Get points based on active method
+  const activeMethod = document.querySelector('.method:not([style*="display: none"])');
+  const methodId = activeMethod.id;
+  let points = [];
+  let pointLabels = [];
 
+  if (methodId === 'method3') {
+    const fx = parseFloat(document.getElementById('xFocus').value);
+    const fy = parseFloat(document.getElementById('yFocus').value);
+    points = [{ x: fx, y: fy }];
+    pointLabels = ["Focus Point"];
+  } else if (methodId === 'method2') {
+    points = [
+      { 
+        x: parseFloat(document.getElementById('vertX').value), 
+        y: parseFloat(document.getElementById('vertY').value)
+      },
+      { 
+        x: parseFloat(document.getElementById('vertX1').value), 
+        y: parseFloat(document.getElementById('vertY1').value)
+      }
+    ];
+    pointLabels = ["Vertex Point", "Second Point"];
+  } else {
+    points = [
+      { 
+        x: parseFloat(document.getElementById('x1').value), 
+        y: parseFloat(document.getElementById('y1').value)
+      },
+      { 
+        x: parseFloat(document.getElementById('x2').value), 
+        y: parseFloat(document.getElementById('y2').value)
+      },
+      { 
+        x: parseFloat(document.getElementById('x3').value), 
+        y: parseFloat(document.getElementById('y3').value)
+      }
+    ];
+    pointLabels = ["First Point", "Second Point", "Third Point"];
+  }
+
+  // Draw point coordinates at the bottom left, stacked
+  if (points.length > 0) {
+    const decimalPlaces = parseInt(localStorage.getItem('decimal-places')) || 2;
+    tempCtx.textAlign = 'left';
+    tempCtx.font = 'bold 16px Arial';
+    
+    points.forEach((point, index) => {
+      const label = pointLabels[index];
+      const coords = `(${point.x.toFixed(decimalPlaces - 2)}, ${point.y.toFixed(decimalPlaces - 2)})`;
+      tempCtx.fillText(`${label}: ${coords}`, 20, tempCanvas.height - 20 - (points.length - 1 - index) * 25);
+    });
+  }
+
+  // Create download link
   const link = document.createElement('a');
-
   const date = new Date();
   const timestamp = date.toISOString().slice(0,19).replace(/[:]/g, '-').replace('T', ', Time: ');
   
@@ -90,20 +150,17 @@ function exportGraph(canvasId) {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-
 }
 
 function updateDecimalPlaces(value) {
   document.getElementById('decimalValue').textContent = value;
   localStorage.setItem('decimal-places', value);
   
-  // Update equation display if it exists
   if (typeof globA !== 'undefined' && typeof globB !== 'undefined' && typeof globC !== 'undefined') {
     updateEquationDisplay(globA, globB, globC);
   }
 }
 
-// Add grid snap settings
 function handleGridSnapToggle(enabled) {
   localStorage.setItem('grid-snap-enabled', enabled);
   if (window.toggleGridSnap) {
@@ -131,7 +188,6 @@ document.addEventListener('DOMContentLoaded', function() {
   const savedFormat = localStorage.getItem('preferred-format') || 'standard';
   document.getElementById('equationFormat').value = savedFormat;
 
-  // Load saved decimal places
   const savedDecimalPlaces = localStorage.getItem('decimal-places') || '4';
   document.getElementById('decimalPlaces').value = savedDecimalPlaces;
   document.getElementById('decimalValue').textContent = savedDecimalPlaces;
@@ -165,7 +221,6 @@ document.addEventListener('DOMContentLoaded', function() {
     updateDecimalPlaces(this.value);
   });
 
-  // Load grid snap settings
   const gridSnapEnabled = localStorage.getItem('grid-snap-enabled') === 'true';
   const gridSnapSize = localStorage.getItem('grid-snap-size') || '0.5';
   

@@ -19,6 +19,62 @@ An intuitive web-based tool for working with quadratic equations and parabolas. 
   - Visual representation of the parabola
   - Interactive plotting system
 
+## Recent Updates
+
+### Feature: Enhanced Graph Export, Testing, and UI Improvements
+
+#### Graph Export and Visualization
+- **Enhanced PNG Export**
+  - Added timestamp-based naming for exported files
+  - Included equation display at the top of exported images
+  - Added point coordinates with descriptive labels
+  - Implemented custom canvas creation for exports
+  - Added decimal place precision based on settings
+
+- **Point Visualization**
+  - Added dynamic point labels (P1, P2, P3, Focus, Vertex)
+  - Implemented method-specific point labeling
+  - Enhanced coordinate display formatting
+  - Added proper spacing in exported images
+
+#### Testing Suite Enhancements
+- **Draggable Features Tests**
+  - Added comprehensive unit tests for interactive features
+  - Implemented point detection tests
+  - Added zoom level interaction tests
+  - Created grid snap behavior tests
+  - Added canvas edge detection tests
+
+- **Method Switching Tests**
+  - Added tests for method visibility
+  - Implemented input field state preservation tests
+  - Added error message display tests
+  - Created canvas state preservation tests
+
+#### UI Improvements
+- **Visual Elements**
+  - Added zoom level display in top-right corner
+  - Enhanced equation display formatting
+  - Improved point coordinate presentation
+  - Added semi-transparent background for better readability
+
+- **Cross-browser Compatibility**
+  - Added standard CSS properties
+  - Implemented vendor prefixes for better browser support
+  - Enhanced input range styling
+
+#### Technical Improvements
+- **Code Organization**
+  - Separated point drawing logic
+  - Enhanced state management
+  - Improved method detection
+  - Implemented consistent decimal handling
+
+- **Error Handling**
+  - Added comprehensive error checks
+  - Improved error message display
+  - Enhanced state validation
+
 ## Interactive Features
 
 ### Draggable Points

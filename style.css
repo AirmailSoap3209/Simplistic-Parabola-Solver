@@ -96,6 +96,7 @@ button:focus, .button:focus {
 
 #results {
   margin-top: 20px;
+  position: relative;
 }
 
 #equation {
@@ -565,6 +566,8 @@ input:valid {
 
 input[type="range"] {
   -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
   height: 5px;
   background: #ddd;
   border-radius: 5px;
@@ -812,4 +815,16 @@ input[type="range"]::-moz-range-thumb:hover {
 
 .toggle-switch input:checked + .slider:before {
   transform: translateX(26px);
+}
+
+.zoom-level {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 14px;
+  color: #666;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 5px 10px;
+  border-radius: 4px;
+  margin: 0;
 }

@@ -45,6 +45,7 @@ function plotThing(a, b, c, canvasId = 'parabolaCanvas') {
 
   if (canvasId === 'parabolaCanvas') {
     drawPointsForActiveMethod(ctx);
+    updateZoomDisplay();
   }
 
   ctx.restore();
@@ -95,45 +96,35 @@ let previousPoints = [];
 function drawPointsForActiveMethod(ctx) {
   const activeMethod = document.querySelector('.method:not([style*="display: none"])');
   const methodId = activeMethod.id;
-  ctx.fillStyle = 'black';
 
-  let currentPoints = [];
-
-  switch (methodId) {
-    case 'method1':
-      currentPoints = [
-        { x: parseFloat(document.getElementById('x1').value), y: parseFloat(document.getElementById('y1').value) },
-        { x: parseFloat(document.getElementById('x2').value), y: parseFloat(document.getElementById('y2').value) },
-        { x: parseFloat(document.getElementById('x3').value), y: parseFloat(document.getElementById('y3').value) },
-      ];
-      break;
-
-    case 'method2':
-      currentPoints = [
-        { x: parseFloat(document.getElementById('vertX').value), y: parseFloat(document.getElementById('vertY').value) },
-        { x: parseFloat(document.getElementById('vertX1').value), y: parseFloat(document.getElementById('vertY1').value) }
-      ];
-      break;
+  if (methodId === 'method3') {
+    const fx = parseFloat(document.getElementById('xFocus').value);
+    const fy = parseFloat(document.getElementById('yFocus').value);
+    const directrixY = parseFloat(document.getElementById('yDirectrix').value);
     
-    case 'method3':
-      const fx = parseFloat(document.getElementById('xFocus').value);
-      const fy = parseFloat(document.getElementById('yFocus').value);
-      const directrixY = parseFloat(document.getElementById('yDirectrix').value);
-      
-      currentPoints = [
-        { x: fx, y: fy, type: 'focus' }
-      ];
-      
-      // Draw focus point in a different color
-      ctx.fillStyle = '#ff4444';
-      drawPoints(ctx, currentPoints);
-      
-      // Draw directrix line
-      drawDirectrix(ctx, directrixY);
-      return;
+    drawPoints(ctx, [
+      { x: fx, y: fy, type: 'focus' }
+    ]);
+    drawDirectrix(ctx, directrixY);
+  } else {
+    let points = [];
+    switch (methodId) {
+      case 'method1':
+        points = [
+          { x: parseFloat(document.getElementById('x1').value), y: parseFloat(document.getElementById('y1').value), inputs: ['x1', 'y1'] },
+          { x: parseFloat(document.getElementById('x2').value), y: parseFloat(document.getElementById('y2').value), inputs: ['x2', 'y2'] },
+          { x: parseFloat(document.getElementById('x3').value), y: parseFloat(document.getElementById('y3').value), inputs: ['x3', 'y3'] }
+        ];
+        break;
+      case 'method2':
+        points = [
+          { x: parseFloat(document.getElementById('vertX').value), y: parseFloat(document.getElementById('vertY').value), inputs: ['vertX', 'vertY'], type: 'vertex' },
+          { x: parseFloat(document.getElementById('vertX1').value), y: parseFloat(document.getElementById('vertY1').value), inputs: ['vertX1', 'vertY1'] }
+        ];
+        break;
+    }
+    drawPoints(ctx, points);
   }
-
-  drawPoints(ctx, currentPoints);
 }
 
 function drawDirectrix(ctx, yValue) {
@@ -157,9 +148,26 @@ function drawPoints(ctx, points) {
     if (!isNaN(point.x) && !isNaN(point.y)) {
       const plottedX = point.x * 20;
       const plottedY = -point.y * 20;
+      
+      // Draw the point
       ctx.beginPath();
       ctx.arc(plottedX, plottedY, 5, 0, Math.PI * 2);
       ctx.fill();
+
+      // Add label
+      ctx.save();
+      ctx.fillStyle = '#000000';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'bottom';
+      ctx.font = 'bold 14px Arial';
+      
+      // Get label based on point type
+      let label = point.type === 'focus' ? 'Focus' : 
+                  point.inputs ? `P${point.inputs[0].replace(/[^0-9]/g, '')}` : '';
+      
+      // Position label slightly offset from point
+      ctx.fillText(label, plottedX + 10, plottedY - 5);
+      ctx.restore();
     }
   });
 }
@@ -365,20 +373,17 @@ function setupCanvas(canvasId) {
     }
   });
 
-  canvas.addEventListener('wheel', (event) => {
-    event.preventDefault();
-    
-    const zoomIn = event.deltaY < 0;
-    const newZoom = zoomIn ? zoomLevel * (1 + zoomStep) : zoomLevel * (1 - zoomStep);
-    
+  canvas.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    const zoomAmount = e.deltaY > 0 ? -zoomStep : zoomStep;
+    const newZoom = zoomLevel + zoomAmount;
+
     if (newZoom >= maxZoomOut && newZoom <= maxZoomIn) {
-        zoomLevel = newZoom;
-        displayMessage(`Zoom level: ${Math.round(zoomLevel * 100)}%`);
-    } else {
-        displayMessage('Maximum zoom limit reached', true);
+      zoomLevel = newZoom;
+      if (typeof globA !== 'undefined' && typeof globB !== 'undefined' && typeof globC !== 'undefined') {
+        plotThing(globA, globB, globC, canvasId);
+      }
     }
-    
-    plotThing(globA, globB, globC, canvasId);
   });
 }
 
@@ -422,6 +427,13 @@ function updateParabola() {
         lastFrameTime = currentTime;
         pendingUpdate = false;
     });
+}
+
+function updateZoomDisplay() {
+  const zoomDisplay = document.getElementById('zoomDisplay');
+  if (zoomDisplay) {
+    zoomDisplay.textContent = `Zoom: ${(zoomLevel * 100).toFixed(0)}%`;
+  }
 }
 
 // Setup both canvases
