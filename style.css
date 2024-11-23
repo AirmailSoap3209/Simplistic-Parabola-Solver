@@ -508,7 +508,7 @@ button, .button {
 }
 
 .tab {
-  transition: all 0.3s ease;
+  transition: all 0.1s ease;
 }
 
 .tab:hover {
@@ -1049,4 +1049,12 @@ input[type="range"]::-moz-range-thumb:hover {
   white-space: pre-wrap;
   max-height: 1200px;
   overflow-y: auto;
+}
+
+#gridSnapValue {
+  display: inline-block;
+  min-width: 20px;
+  text-align: center;
+  font-weight: bold;
+  color: #2ecc71;
 }
