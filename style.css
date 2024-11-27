@@ -1058,3 +1058,15 @@ input[type="range"]::-moz-range-thumb:hover {
   font-weight: bold;
   color: #2ecc71;
 }
+
+.equation-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.equation-container p {
+  margin: 0;
+}
