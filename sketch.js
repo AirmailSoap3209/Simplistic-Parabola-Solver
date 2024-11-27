@@ -200,16 +200,26 @@ function solveFromFocusAndDirectrix(fx, fy, directrixY) {
   return { a, b, c };
 }
 
+function solveSinusoidal(a, b, c, d) {
+  // y = a * sin(b(x - c)) + d
+  return { a, b, c, d, type: 'sin' };
+}
+
+function solveTangent(a, b, c, d) {
+  // y = a * tan(b(x - c)) + d
+  return { a, b, c, d, type: 'tan' };
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    const format = localStorage.getItem('preferred-format') || 'standard';
-    isVertexForm = format === 'vertex';
+  const format = localStorage.getItem('preferred-format') || 'standard';
+  isVertexForm = format === 'vertex';
 });
 
 document.getElementById('equationFormat').addEventListener('change', function() {
-    isVertexForm = this.value === 'vertex';
-    if (globA !== undefined && globB !== undefined && globC !== undefined) {
-        updateEquationDisplay(globA, globB, globC);
-    }
+  isVertexForm = this.value === 'vertex';
+  if (globA !== undefined && globB !== undefined && globC !== undefined) {
+    updateEquationDisplay(globA, globB, globC);
+  }
 });
 
 document.getElementById('3ptForm').addEventListener('submit', function(event) {
@@ -341,4 +351,38 @@ document.getElementById('vertForm').addEventListener('submit', function(event) {
 
   const {b, c} = vertexToStandard(a, h, k);
   updateEquationDisplay(a, b, c);
+});
+
+document.getElementById('sinForm').addEventListener('submit', function(event) {
+  event.preventDefault();
+
+  const a = parseFloat(document.getElementById('sinInputA').value);
+  const b = parseFloat(document.getElementById('sinInputB').value);
+  const c = parseFloat(document.getElementById('sinInputC').value);
+  const d = parseFloat(document.getElementById('sinInputD').value);
+
+  if (!validateInputs([a, b, c, d])) {
+    displayMessage("Input values must be between -300 and 300.", true);
+    return;
+  }
+
+  const result = solveSinusoidal(a, b, c, d);
+  plotThing(result.a, result.b, result.c, result.d, 'sin');
+});
+
+document.getElementById('tanForm').addEventListener('submit', function(event) {
+  event.preventDefault();
+
+  const a = parseFloat(document.getElementById('tanInputA').value);
+  const b = parseFloat(document.getElementById('tanInputB').value);
+  const c = parseFloat(document.getElementById('tanInputC').value);
+  const d = parseFloat(document.getElementById('tanInputD').value);
+
+  if (!validateInputs([a, b, c, d])) {
+    displayMessage("Input values must be between -300 and 300.", true);
+    return;
+  }
+
+  const result = solveTangent(a, b, c, d);
+  plotThing(result.a, result.b, result.c, result.d, 'tan');
 });

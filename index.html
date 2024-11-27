@@ -97,6 +97,56 @@
               <button type="submit">Calculate Equation</button>
             </form>
           </div>
+
+          <div id="method4" class="method">
+            <h2>Sinusoidal Function <span class="tooltip-icon" data-tooltip="Enter parameters for y = a * sin(b(x - c)) + d">ⓘ</span></h2>
+            <p class="description">Enter parameters for a sinusoidal function.</p>
+            <form id="sinForm" class="input-form">
+              <div class="input-group">
+                <label for="sinInputA">Amplitude (a):</label>
+                <input type="number" step="any" id="sinInputA" placeholder="Amplitude" autocomplete="off" required>
+              </div>
+              <div class="input-group">
+                <label for="sinInputB">Frequency (b):</label>
+                <input type="number" step="any" id="sinInputB" placeholder="Frequency" autocomplete="off" required>
+              </div>
+              <div class="input-group">
+                <label for="sinInputC">Phase Shift (c):</label>
+                <input type="number" step="any" id="sinInputC" placeholder="Phase Shift" autocomplete="off" required>
+              </div>
+              <div class="input-group">
+                <label for="sinInputD">Vertical Shift (d):</label>
+                <input type="number" step="any" id="sinInputD" placeholder="Vertical Shift" autocomplete="off" required>
+              </div>
+              <div class="error-message" id="sinError"></div>
+              <button type="submit">Plot Function</button>
+            </form>
+          </div>
+
+          <div id="method5" class="method">
+            <h2>Tangent Function <span class="tooltip-icon" data-tooltip="Enter parameters for y = a * tan(b(x - c)) + d">ⓘ</span></h2>
+            <p class="description">Enter parameters for a tangent function.</p>
+            <form id="tanForm" class="input-form">
+              <div class="input-group">
+                <label for="tanInputA">Amplitude (a):</label>
+                <input type="number" step="any" id="tanInputA" placeholder="Amplitude" autocomplete="off" required>
+              </div>
+              <div class="input-group">
+                <label for="tanInputB">Frequency (b):</label>
+                <input type="number" step="any" id="tanInputB" placeholder="Frequency" autocomplete="off" required>
+              </div>
+              <div class="input-group">
+                <label for="tanInputC">Phase Shift (c):</label>
+                <input type="number" step="any" id="tanInputC" placeholder="Phase Shift" autocomplete="off" required>
+              </div>
+              <div class="input-group">
+                <label for="tanInputD">Vertical Shift (d):</label>
+                <input type="number" step="any" id="tanInputD" placeholder="Vertical Shift" autocomplete="off" required>
+              </div>
+              <div class="error-message" id="tanError"></div>
+              <button type="submit">Plot Function</button>
+            </form>
+          </div>
         </div>
 
         <span id="right-arrow" class="arrow">&#8250;</span>

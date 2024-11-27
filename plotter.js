@@ -3,7 +3,7 @@ let offsetY = 0;
 let isDragging = false;
 let startX, startY;
 let zoomLevel = 1;
-let globA, globB, globC;
+let globA, globB, globC, globD;
 
 const maxZoomIn = 5;
 const maxZoomOut = 0.125;
@@ -22,16 +22,16 @@ let lastFrameTime = 0;
 const minFrameInterval = 1000 / 60; // Limit to 60 FPS
 let pendingUpdate = false;
 
-function plotThing(a, b, c, canvasId = 'parabolaCanvas') {
+function plotThing(a, b, c, d, type = 'parabola', canvasId = 'parabolaCanvas') {
   globA = a;
   globB = b;
   globC = c;
+  globD = d;
   const range = 12000;
 
   const canvas = document.getElementById(canvasId);
   const ctx = canvas.getContext('2d');
 
-  // Clear the canvas and reset points array
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   previousPoints = [];
 
@@ -41,7 +41,13 @@ function plotThing(a, b, c, canvasId = 'parabolaCanvas') {
 
   drawAxesAndGrid(ctx, range);
 
-  drawParabola(ctx, a, b, c, range);
+  if (type === 'parabola') {
+    drawParabola(ctx, a, b, c, range);
+  } else if (type === 'sin') {
+    drawSinusoidal(ctx, a, b, c, d, range);
+  } else if (type === 'tan') {
+    drawTangent(ctx, a, b, c, d, range);
+  }
 
   if (canvasId === 'parabolaCanvas') {
     drawPointsForActiveMethod(ctx);
@@ -87,6 +93,28 @@ function drawParabola(ctx, a, b, c, range) {
     ctx.lineTo(x, y * 20);
   }
   ctx.strokeStyle = 'red';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+
+function drawSinusoidal(ctx, a, b, c, d, range) {
+  ctx.beginPath();
+  for (let x = -range; x<= range; x++) {
+    const y = -(a * Math.sin(b * (x / 20) + c) + d);
+    ctx.lineTo(x, y * 20);
+  }
+  ctx.strokeStyle = 'blue';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+
+function drawTangent(ctx, a, b, c, d, range) {
+  ctx.beginPath();
+  for (let x = -range; x<= range; x++) {
+    const y = -(a * Math.tan(b * (x / 20) + c) + d);
+    ctx.lineTo(x, y * 20);
+  }
+  ctx.strokeStyle = 'green';
   ctx.lineWidth = 2;
   ctx.stroke();
 }
@@ -341,7 +369,7 @@ function setupCanvas(canvasId) {
       offsetX = e.clientX - startX;
       offsetY = e.clientY - startY;
       requestAnimationFrame(() => {
-        plotThing(globA, globB, globC, canvasId);
+        plotThing(globA, globB, globC, globD, 'parabola', canvasId);
       });
     } else if (isInteractiveMode) {
       // Update cursor based on what we're hovering over
@@ -380,8 +408,8 @@ function setupCanvas(canvasId) {
 
     if (newZoom >= maxZoomOut && newZoom <= maxZoomIn) {
       zoomLevel = newZoom;
-      if (typeof globA !== 'undefined' && typeof globB !== 'undefined' && typeof globC !== 'undefined') {
-        plotThing(globA, globB, globC, canvasId);
+      if (typeof globA !== 'undefined' && typeof globB !== 'undefined' && typeof globC !== 'undefined' && typeof globD !== 'undefined') {
+        plotThing(globA, globB, globC, globD, 'parabola', canvasId);
       }
     }
   });
@@ -415,7 +443,7 @@ function updateParabola() {
         }
 
         // Always redraw points even if validation fails
-        plotThing(globA || 0, globB || 0, globC || 0);
+        plotThing(globA || 0, globB || 0, globC || 0, globD || 0);
 
         // Try to update equation
         const form = document.querySelector('.method:not([style*="display: none"]) form');
