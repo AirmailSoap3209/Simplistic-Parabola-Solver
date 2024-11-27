@@ -4,6 +4,7 @@ let isDragging = false;
 let startX, startY;
 let zoomLevel = 1;
 let globA, globB, globC, globD;
+let currentFunctionType = 'parabola';  
 
 const maxZoomIn = 5;
 const maxZoomOut = 0.125;
@@ -27,6 +28,7 @@ function plotThing(a, b, c, d, type = 'parabola', canvasId = 'parabolaCanvas') {
   globB = b;
   globC = c;
   globD = d;
+  currentFunctionType = type;  
   const range = 12000;
 
   const canvas = document.getElementById(canvasId);
@@ -369,7 +371,7 @@ function setupCanvas(canvasId) {
       offsetX = e.clientX - startX;
       offsetY = e.clientY - startY;
       requestAnimationFrame(() => {
-        plotThing(globA, globB, globC, globD, 'parabola', canvasId);
+        plotThing(globA, globB, globC, globD, currentFunctionType, canvasId);
       });
     } else if (isInteractiveMode) {
       // Update cursor based on what we're hovering over
@@ -409,7 +411,7 @@ function setupCanvas(canvasId) {
     if (newZoom >= maxZoomOut && newZoom <= maxZoomIn) {
       zoomLevel = newZoom;
       if (typeof globA !== 'undefined' && typeof globB !== 'undefined' && typeof globC !== 'undefined' && typeof globD !== 'undefined') {
-        plotThing(globA, globB, globC, globD, 'parabola', canvasId);
+        plotThing(globA, globB, globC, globD, currentFunctionType, canvasId);
       }
     }
   });
@@ -443,7 +445,7 @@ function updateParabola() {
         }
 
         // Always redraw points even if validation fails
-        plotThing(globA || 0, globB || 0, globC || 0, globD || 0);
+        plotThing(globA || 0, globB || 0, globC || 0, globD || 0, currentFunctionType);
 
         // Try to update equation
         const form = document.querySelector('.method:not([style*="display: none"]) form');

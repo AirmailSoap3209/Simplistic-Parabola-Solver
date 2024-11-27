@@ -133,28 +133,68 @@ function vertexToStandard(a, h, k) {
   return { a, b, c };
 }
 
-function getEquationText(a, b, c) {
-  if (Math.abs(a) < 1e-10 && Math.abs(b) < 1e-10) {
-    return `The straight line with best fit is: y = ${formatEquation(a, b, c)}`;
+function formatTrigEquation(a, b, c, d, func) {
+  let equation = 'y = ';
+  
+  // Handle amplitude
+  if (a === 1) {
+    equation += func;
+  } else if (a === -1) {
+    equation += '-' + func;
+  } else {
+    equation += formatNumber(a) + func;
   }
 
-  if (Math.abs(a) < 1e-10) {
-    return `The linear equation with best fit is: y = ${formatEquation(a, b, c)}`;
+  // Handle frequency and phase shift
+  if (b === 1) {
+    if (c === 0) {
+      equation += '(x)';
+    } else if (c > 0) {
+      equation += '(x - ' + formatNumber(c) + ')';
+    } else {
+      equation += '(x + ' + formatNumber(-c) + ')';
+    }
+  } else {
+    if (c === 0) {
+      equation += '(' + formatNumber(b) + 'x)';
+    } else if (c > 0) {
+      equation += '(' + formatNumber(b) + 'x - ' + formatNumber(b * c) + ')';
+    } else {
+      equation += '(' + formatNumber(b) + 'x + ' + formatNumber(-b * c) + ')';
+    }
   }
 
-  if (isVertexForm) {
-    const vertex = standardToVertex(a, b, c);
-    return `The quadratic equation with best fit is: y = ${formatVertexForm(vertex.a, vertex.h, vertex.k)}`;
+  // Handle vertical shift
+  if (d > 0) {
+    equation += ' + ' + formatNumber(d);
+  } else if (d < 0) {
+    equation += ' - ' + formatNumber(-d);
   }
 
-  return `The quadratic equation with best fit is: y = ${formatEquation(a, b, c)}`;
+  return equation;
 }
 
-function updateEquationDisplay(a, b, c) {
-  document.getElementById('equation').innerHTML = getEquationText(a, b, c);
-  plotThing(a, b, c, 'parabolaCanvas');
-  
-  plotThing(a, b, c, 'equParabolaCanvas');
+function getEquationText(a, b, c, d, type = 'parabola') {
+  if (type === 'parabola') {
+    if (isVertexForm) {
+      const vertex = standardToVertex(a, b, c);
+      return `y = ${formatNumber(vertex.a)}(x - ${formatNumber(vertex.h)})² + ${formatNumber(vertex.k)}`;
+    } else {
+      return `y = ${formatNumber(a)}x² + ${formatNumber(b)}x + ${formatNumber(c)}`;
+    }
+  } else if (type === 'sin') {
+    return formatTrigEquation(a, b, c, d, 'sin');
+  } else if (type === 'tan') {
+    return formatTrigEquation(a, b, c, d, 'tan');
+  }
+}
+
+function updateEquationDisplay(a, b, c, d, type = 'parabola') {
+  const equation = document.getElementById('equation');
+  if (equation) {
+    equation.textContent = getEquationText(a, b, c, d, type);
+  }
+  plotThing(a, b, c, d, type);
 }
 
 function solveFromPoints(x1, y1, x2, y2, x3, y3) {
@@ -367,7 +407,7 @@ document.getElementById('sinForm').addEventListener('submit', function(event) {
   }
 
   const result = solveSinusoidal(a, b, c, d);
-  plotThing(result.a, result.b, result.c, result.d, 'sin');
+  updateEquationDisplay(result.a, result.b, result.c, result.d, 'sin');
 });
 
 document.getElementById('tanForm').addEventListener('submit', function(event) {
@@ -384,5 +424,5 @@ document.getElementById('tanForm').addEventListener('submit', function(event) {
   }
 
   const result = solveTangent(a, b, c, d);
-  plotThing(result.a, result.b, result.c, result.d, 'tan');
+  updateEquationDisplay(result.a, result.b, result.c, result.d, 'tan');
 });
